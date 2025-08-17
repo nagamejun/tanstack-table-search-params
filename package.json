@@ -5,7 +5,6 @@
   },
   "packageManager": "pnpm@10.11.1",
   "scripts": {
-    "prepare": "pnpm build",
     "tanstack-table-search-params": "pnpm --filter './packages/tanstack-table-search-params'",
     "examples/next-pages-router": "pnpm --filter './examples/next-pages-router'",
     "examples/next-app-router": "pnpm --filter './examples/next-app-router'",

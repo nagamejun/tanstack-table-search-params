@@ -17,6 +17,7 @@
     "query params"
   ],
   "scripts": {
+    "prepare": "pnpm build",
     "test": "vitest",
     "build": "tsup",
     "type-check": "tsc --noEmit"
