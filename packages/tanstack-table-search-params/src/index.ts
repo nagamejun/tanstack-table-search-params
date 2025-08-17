@@ -236,7 +236,9 @@ export const useTableSearchParams = (
     ],
   );
 
-  const batchedStateUpdate = useBatchedStateUpdate({ router, options });
+  const batchedStateUpdate = useBatchedStateUpdate(
+    options ? { router, options } : { router },
+  );
 
   const onStateChange = useCallback(
     async (updater: Parameters<OnChangeFn<TableState>>[0]) => {
