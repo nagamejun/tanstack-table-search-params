@@ -1,6 +1,8 @@
 import type { OnChangeFn, TableState } from "@tanstack/react-table";
-import { useMemo } from "react";
+import { functionalUpdate } from "@tanstack/react-table";
+import { useCallback, useMemo } from "react";
 import type { Query, Router } from "./types";
+import { useBatchedStateUpdate } from "./useBatchedStateUpdate";
 import { useColumnFilters } from "./useColumnFilters";
 import { useColumnOrder } from "./useColumnOrder";
 import { useGlobalFilter } from "./useGlobalFilter";
@@ -58,6 +60,11 @@ export type Returns = {
    * Tanstack Table's `onChangeRowSelection` function
    */
   onRowSelectionChange: OnChangeFn<State["rowSelection"]>;
+  /**
+   * Tanstack Table's `onStateChange` function
+   * This is needed for setState() to sync with URL params
+   */
+  onStateChange: OnChangeFn<TableState>;
 };
 
 export type Options = {
@@ -135,7 +142,7 @@ const extractSpecificStateOptions = <KEY extends keyof State>({
           typeof v === "object" ? v?.[key] : v,
         ])
       : [],
-  );
+  ) as ExtractSpecificStateOptions<KEY>;
 
 type Props = {
   /**
@@ -229,6 +236,21 @@ export const useTableSearchParams = (
     ],
   );
 
+  const batchedStateUpdate = useBatchedStateUpdate({ router, options });
+
+  const onStateChange = useCallback(
+    async (updater: Parameters<OnChangeFn<TableState>>[0]) => {
+      // We only care about the state properties we manage
+      // Type assertion is needed because State is a subset of TableState
+      const currentFullState = state as TableState;
+      const newFullState = functionalUpdate(updater, currentFullState);
+
+      // Use batched update to avoid race conditions
+      await batchedStateUpdate(state, newFullState);
+    },
+    [state, batchedStateUpdate],
+  );
+
   return {
     state,
     onGlobalFilterChange,
@@ -237,5 +259,6 @@ export const useTableSearchParams = (
     onColumnFiltersChange,
     onColumnOrderChange,
     onRowSelectionChange,
+    onStateChange,
   };
 };
